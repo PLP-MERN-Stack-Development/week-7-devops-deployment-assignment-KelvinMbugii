@@ -1,0 +1,38 @@
+# Node modules
+node_modules/
+
+# Environment variables
+.env
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Coverage and build outputs
+coverage/
+dist/
+build/
+
+# IDE configs
+.vscode/
+.idea/
+
+# Optional: MongoDB dump or data directories
+dump/
+data/
+
+# PM2 or similar process manager logs
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Optional: test coverage reports
+.nyc_output/
