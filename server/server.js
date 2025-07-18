@@ -32,6 +32,10 @@ const io = socketIo(server, {
   },
 });
 
+const allowedOrigins = [
+  '*'
+];
+
 // Middleware
 app.use(cors());
 app.use(express.json());
