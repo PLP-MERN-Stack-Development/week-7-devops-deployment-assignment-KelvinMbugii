@@ -20,74 +20,90 @@ jobs:
           
     steps:
       - uses: actions/checkout@v3
-      
-      - name: Set up Node.js
+
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: './server/package.json'
-      
+          node-version: "18"
+          cache: "pnpm"
+          cache-dependency-path: ./server/pnpm-lock.yaml
+
+      - name: Cache pnpm store
+        uses: actions/cache@v3
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('server/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
       - name: Install backend dependencies
         run: |
           cd server
-          npm ci
-      
+          pnpm install
+
       - name: Run backend linting
         run: |
           cd server
-          npm run lint
-      
+          pnpm run lint
+
       - name: Run backend tests
         run: |
           cd server
-          npm test
+          pnpm test
         env:
           CI: true
           MONGODB_URI: mongodb://localhost:27017/test
           JWT_SECRET: test_secret_for_ci
-      
+
       - name: Build backend
         run: |
           cd server
-          npm run build --if-present
+          pnpm run build --if-present
 
   # Frontend tests and build
   frontend-ci:
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v3
-      
-      - name: Set up Node.js
+
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: './client/package.json'
-      
+          node-version: "18"
+          cache: "pnpm"
+          cache-dependency-path: ./client/pnpm-lock.yaml
+
+      - name: Cache pnpm store
+        uses: actions/cache@v3
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('client/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
       - name: Install frontend dependencies
         run: |
           cd client
-          npm ci
-      
+          pnpm install
+
       - name: Run frontend linting
         run: |
           cd client
-          npm run lint
-      
+          pnpm run lint
+
       - name: Run frontend tests
         run: |
           cd client
-          npm test
+          pnpm test
         env:
           CI: true
-      
+
       - name: Build frontend
         run: |
           cd client
-          npm run build
-      
+          pnpm run build
+
       - name: Upload frontend build artifact
         uses: actions/upload-artifact@v3
         with:
@@ -100,10 +116,10 @@ jobs:
     needs: [backend-ci, frontend-ci]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Deploy to Render
         uses: johnbeynon/render-deploy-action@v0.0.8
         with:
@@ -115,16 +131,16 @@ jobs:
     needs: [backend-ci, frontend-ci]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Download frontend build artifact
         uses: actions/download-artifact@v3
         with:
           name: frontend-build
           path: client/dist
-      
+
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v20
         with:
@@ -138,7 +154,7 @@ jobs:
   health-check:
     needs: [deploy-backend, deploy-frontend]
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Check backend health
         uses: jtalk/url-health-check-action@v3
@@ -146,10 +162,10 @@ jobs:
           url: ${{ secrets.BACKEND_URL }}/api/health
           max-attempts: 3
           retry-delay: 5s
-      
-      - name: Check frontend
+
+      - name: Check frontend health
         uses: jtalk/url-health-check-action@v3
         with:
           url: ${{ secrets.FRONTEND_URL }}
           max-attempts: 3
-          retry-delay: 5s 
+          retry-delay: 5s
