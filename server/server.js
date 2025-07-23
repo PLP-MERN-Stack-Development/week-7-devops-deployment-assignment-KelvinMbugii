@@ -34,7 +34,7 @@ const io = socketIo(server, {
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://smart-farm-app.vercel.app/",
+  "https://medicare-theta-dusky.vercel.app/",
 ];
 
 // Middleware
