@@ -33,11 +33,22 @@ const io = socketIo(server, {
 });
 
 const allowedOrigins = [
-  '*'
+  "http://localhost:5173",
+  "https://smart-farm-app.vercel.app/",
 ];
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+    },
+    credentials: true,
+    methods: "GET, POST, PUT, DELETE",
+    allowedHeaders: "content-Type, Authorization",
+  })
+);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
